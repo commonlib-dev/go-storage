@@ -9,6 +9,10 @@ Storage Implementation:
 
 ## Usage
 
+Install (go 1.15+)
+```sh
+go get -u github.com/abdularis/go-storage
+```
 
 ## Implementation
 
