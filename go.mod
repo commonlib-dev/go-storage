@@ -1,4 +1,4 @@
-module github.com/abdularis/gostorage
+module github.com/abdularis/go-storage
 
 go 1.15
 
