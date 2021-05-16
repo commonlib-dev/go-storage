@@ -7,9 +7,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // LocalStorageSignedURLBuilder is used to serve file temporarily in private directory mode
@@ -226,10 +225,6 @@ func (s *storageLocalFile) makeObjectPublic(objectPath string) error {
 		return err
 	}
 
-	// In windows there's an issue in creating symbolic link
-	// issue: "A required privilege is not held by the client"
-	// therefore the easiest solution is create a copy/hard link
-	// TODO use symbolic link for linux
 	if isFileExists(publicPath) {
 		if err := os.Remove(publicPath); err != nil {
 			return err
@@ -237,9 +232,17 @@ func (s *storageLocalFile) makeObjectPublic(objectPath string) error {
 	}
 
 	filePath := filepath.Join(s.baseDir, objectPath)
-	if err := os.Link(filePath, publicPath); err != nil {
-		logrus.Error(err)
-		return err
+
+	if runtime.GOOS == "linux" {
+		if err := os.Symlink(filePath, publicPath); err != nil {
+			return err
+		}
+		return nil
 	}
-	return nil
+
+	// windows
+	// In windows there's an issue in creating symbolic link
+	// issue: "A required privilege is not held by the client"
+	// therefore the easiest solution is create a copy/hard link
+	return os.Link(filePath, publicPath)
 }
