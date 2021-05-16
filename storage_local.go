@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// LocalStorageSignedURLBuilder is used to serve file temporarily in private directory mode
 type LocalStorageSignedURLBuilder func(absoluteFilePath string, objectPath string, expireIn time.Duration) (string, error)
 
 type storageLocalFile struct {
@@ -22,6 +23,11 @@ type storageLocalFile struct {
 }
 
 // NewLocalStorage create local file storage
+// with given params
+// baseDir: base directory where a private file is stored (conventionally directory should not publicly serve over http)
+// publicBaseDir: base directory where a public file reside, the file actually a link from baseDir, directory should be publicly serve over http
+// publicBaseURL: base URL where to be concatenated with objectPath to build full file download URL
+// signedURLBuilder: used to generate temporary download URL for serving private files if needed (provide nil will always return error)
 func NewLocalStorage(
 	baseDir string,
 	publicBaseDir string,
@@ -29,7 +35,7 @@ func NewLocalStorage(
 	signedURLBuilder LocalStorageSignedURLBuilder) Storage {
 	if signedURLBuilder == nil {
 		signedURLBuilder = func(absoluteFilePath string, objectPath string, expireIn time.Duration) (string, error) {
-			return "", fmt.Errorf("[LocalStorage] unsupported signed url builder")
+			return "", fmt.Errorf("[local-storage] unsupported signed url builder")
 		}
 	}
 
@@ -124,7 +130,7 @@ func (s *storageLocalFile) URL(objectPath string) (string, error) {
 
 	filePath := filepath.Join(s.publicBaseDir, objectPath)
 	if !isFileExists(filePath) {
-		return "", fmt.Errorf("local file does not exists")
+		return "", fmt.Errorf("[local-storage] file not found in given public path")
 	}
 
 	u, err := url.Parse(s.publicBaseURL)
@@ -140,12 +146,17 @@ func (s *storageLocalFile) TemporaryURL(objectPath string, expireIn time.Duratio
 		return "", nil
 	}
 
-	filePath := filepath.Join(s.publicBaseDir, objectPath)
-	if !isFileExists(filePath) {
-		return "", fmt.Errorf("local file does not exists")
+	filePath := filepath.Join(s.baseDir, objectPath)
+	if isFileExists(filePath) {
+		return s.signedURLBuilder(filePath, objectPath, expireIn)
 	}
 
-	return s.signedURLBuilder(filePath, objectPath, expireIn)
+	publicURL, err := s.URL(objectPath)
+	if err != nil {
+		return "", fmt.Errorf("[local-storage] err file not found in given public/private path")
+	}
+
+	return publicURL, nil
 }
 
 func (s *storageLocalFile) Size(objectPath string) (int64, error) {
@@ -190,7 +201,7 @@ func (s *storageLocalFile) SetVisibility(objectPath string, visibility ObjectVis
 			return s.makeObjectPublic(objectPath)
 		}
 	} else {
-		return fmt.Errorf("err invalid object visibility: %s", visibility)
+		return fmt.Errorf("[local-storage] err invalid object visibility: %s", visibility)
 	}
 	return nil
 }
@@ -205,7 +216,7 @@ func (s *storageLocalFile) GetVisibility(objectPath string) (ObjectVisibility, e
 	if isFileExists(filePath) {
 		return ObjectPrivate, nil
 	} else {
-		return "", fmt.Errorf("err get visibility, object not found: %s", objectPath)
+		return "", fmt.Errorf("[local-storage] err get visibility, object not found: %s", objectPath)
 	}
 }
 

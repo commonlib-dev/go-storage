@@ -44,7 +44,9 @@ type Storage interface {
 	// Exist check whether object exists
 	Exist(objectPath string) (bool, error)
 
+	// SetVisibility update object visibility for a given object path
 	SetVisibility(objectPath string, visibility ObjectVisibility) error
 
+	// GetVisibility return object visibility for a given object path
 	GetVisibility(objectPath string) (ObjectVisibility, error)
 }

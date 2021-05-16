@@ -1,6 +1,6 @@
 # Go Storage
 
-Provide storage abstraction for easily working with file object using different storage mechanism.
+Provide simple storage abstraction for easily working with file object using different storage mechanism.
 
 Storage Implementation:
 - [Local Storage](#local-storage)
@@ -138,4 +138,8 @@ func main() {
 
 ### AWS S3
 
+> TODO
+
 ### Alibaba OSS
+
+> TODO
