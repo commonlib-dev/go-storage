@@ -1,4 +1,4 @@
-module github.com/abdularis/go-storage
+module github.com/commonlib-dev/go-storage
 
 go 1.15
 

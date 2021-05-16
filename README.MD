@@ -11,7 +11,7 @@ Storage Implementation:
 
 Install (go 1.15+)
 ```sh
-go get -u github.com/abdularis/go-storage
+go get -u github.com/commonlib-dev/go-storage
 ```
 
 ## Implementation
