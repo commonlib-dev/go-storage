@@ -112,13 +112,13 @@ func (s *storageLocalFile) Copy(srcObjectPath string, dstObjectPath string) erro
 		return err
 	}
 
-	destStream, err := os.Open(destFilePath)
+	destFile, err := os.Create(destFilePath)
 	if err != nil {
 		return err
 	}
-	defer destStream.Close()
+	defer destFile.Close()
 
-	_, err = io.Copy(destStream, sourceStream)
+	_, err = io.Copy(destFile, sourceStream)
 	return err
 }
 
@@ -234,8 +234,13 @@ func (s *storageLocalFile) makeObjectPublic(objectPath string) error {
 	filePath := filepath.Join(s.baseDir, objectPath)
 
 	if runtime.GOOS == "linux" {
-		if err := os.Symlink(filePath, publicPath); err != nil {
-			return err
+		absFilePath, err := filepath.Abs(filepath.ToSlash(filePath))
+		if err != nil {
+			return fmt.Errorf("[local-storage] err while creating abs path: %s", err)
+		}
+
+		if err := os.Symlink(absFilePath, publicPath); err != nil {
+			return fmt.Errorf("[local-storage] err creating sym link: %s", err)
 		}
 		return nil
 	}
