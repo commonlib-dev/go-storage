@@ -92,3 +92,36 @@ func Test_CopyFile(t *testing.T) {
 	// Clean up
 	cleanTestDir()
 }
+
+func Test_ListObjectInDirectory(t *testing.T) {
+	storage := getLocalStorage()
+	srcData := "Hello, this is file content 😊 😅"
+	objectPaths := []string{
+		"test.txt",
+		"test2.txt",
+		"my-dir/test.txt",
+		"my-dir/test2.txt",
+		"my-dir-2/test.txt",
+	}
+
+	// Save data
+	for _, p := range objectPaths {
+		err := storage.Put(p, strings.NewReader(srcData), gostorage.ObjectPublicRead)
+		require.NoError(t, err)
+	}
+
+	// List object inside root dir
+	result, err := storage.List("/")
+	t.Logf("list / = %+v", result)
+	require.NoError(t, err)
+	require.Equal(t, 4, len(result))
+
+	// List object inside my-dir
+	result, err = storage.List("my-dir")
+	t.Logf("list /my-dir = %+v", result)
+	require.NoError(t, err)
+	require.Equal(t, 2, len(result))
+
+	// Clean up
+	cleanTestDir()
+}

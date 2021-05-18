@@ -46,6 +46,10 @@ func cleanOSSObjectPath(objectPath string) string {
 	return path.Clean(filepath.ToSlash(objectPath))
 }
 
+func (s *storageAlibabaOSS) List(objectDir string) ([]ObjectInfo, error) {
+	return nil, fmt.Errorf("unimplemented")
+}
+
 func (s *storageAlibabaOSS) Read(objectPath string) (io.ReadCloser, error) {
 	return s.bucket.GetObject(cleanOSSObjectPath(objectPath))
 }

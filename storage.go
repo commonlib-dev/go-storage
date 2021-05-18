@@ -13,10 +13,18 @@ const (
 	ObjectPublicRead      ObjectVisibility = "public-read"
 )
 
+type ObjectInfo struct {
+	ObjectPath string
+	IsDir      bool
+}
+
 // Storage is an abstraction for persistence storage mechanism,
 // remember that all object path used here should be specified
 // relative to the root location configured for each implementation
 type Storage interface {
+	// List get list of files or directory in specified objectDir
+	List(objectDir string) ([]ObjectInfo, error)
+
 	// Read return reader to stream data from source
 	Read(objectPath string) (io.ReadCloser, error)
 

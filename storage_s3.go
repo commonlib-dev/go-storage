@@ -58,6 +58,10 @@ func cleanS3ObjectPath(objectPath string) string {
 	return path.Clean(filepath.ToSlash(objectPath))
 }
 
+func (s *storageS3) List(objectDir string) ([]ObjectInfo, error) {
+	return nil, fmt.Errorf("unimplemented")
+}
+
 func (s *storageS3) Read(objectPath string) (io.ReadCloser, error) {
 	objectPath = cleanS3ObjectPath(objectPath)
 	output, err := s.s3.GetObject(&s3.GetObjectInput{

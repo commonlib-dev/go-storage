@@ -3,6 +3,7 @@ package gostorage
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path"
@@ -44,6 +45,25 @@ func NewLocalStorage(
 		publicBaseURL:    publicBaseURL,
 		signedURLBuilder: signedURLBuilder,
 	}
+}
+
+func (s *storageLocalFile) List(objectDir string) ([]ObjectInfo, error) {
+	baseDir := filepath.Join(s.baseDir, objectDir)
+
+	infoList, err := ioutil.ReadDir(baseDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var objectInfoList []ObjectInfo
+	for _, i := range infoList {
+		objectInfoList = append(objectInfoList, ObjectInfo{
+			ObjectPath: i.Name(),
+			IsDir:      i.IsDir(),
+		})
+	}
+
+	return objectInfoList, nil
 }
 
 func (s *storageLocalFile) Read(objectPath string) (io.ReadCloser, error) {
